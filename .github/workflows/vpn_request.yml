@@ -163,8 +163,10 @@ jobs:
         if: env.overlap == 'false'
         #if: steps.cidr_check.outputs.overlap == 'false'
         run: |
+          env | grep TF_VAR_
           echo "No CIDR overlap detected. Proceeding with Terraform deployment..."
           terraform init
+          terraform plan
           terraform apply -auto-approve
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
