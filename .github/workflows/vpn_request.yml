@@ -52,7 +52,7 @@ jobs:
           echo "Extra Data: $EXTRA_DATA_JSON"
 
       - name: Send SNS Alert if Overlapping
-        if: env.overlap_found == 'true'
+        #if: env.overlap_found == 'true'
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
