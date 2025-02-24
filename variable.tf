@@ -49,7 +49,7 @@ variable "transit_gateway_route_table_id" {
 variable "ipv4_cidr" {
   description = "The inside CIDR block for VPN tunnels"
   type        = string
-  default     = "192.168.0.0/22"
+  default     = "127.0.0.0/22"
 }
 
 variable "preshared_key" {
