@@ -172,6 +172,6 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: "us-east-1"
-          #TF_VAR_asn: ${{ secrets.TF_VAR_asn }}
+          TF_VAR_asn: ${{ secrets.TF_VAR_asn }}
           TF_VAR_transit_gateway_id: ${{ secrets.TF_VAR_transit_gateway_id }}
           TF_VAR_transit_gateway_route_table_id: ${{ secrets.TF_VAR_transit_gateway_route_table_id }}
