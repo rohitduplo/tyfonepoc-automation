@@ -16,45 +16,44 @@ if not input_cidr:
 ec2 = boto3.client("ec2", region_name=os.getenv("AWS_REGION"))
 sns = boto3.client("sns", region_name=os.getenv("AWS_REGION"))
 
-def check_cidr_overlap(input_cidr):
+# Hardcoded Transit Gateway Route Table ID
+tgw_table_id = "tgw-00300246ad005bc2b"
+
+def check_cidr_overlap(input_cidr, tgw_table_id):
     input_network = ipaddress.ip_network(input_cidr)
-    transit_gateway_tables = ec2.describe_transit_gateway_route_tables()
     overlaps_found = []
 
-    for tgw_table in transit_gateway_tables["TransitGatewayRouteTables"]:
-        tgw_table_id = tgw_table["TransitGatewayRouteTableId"]
+    tgw_routes = ec2.search_transit_gateway_routes(
+        TransitGatewayRouteTableId=tgw_table_id,
+        Filters=[{"Name": "state", "Values": ["active"]}]
+    )
 
-        tgw_routes = ec2.search_transit_gateway_routes(
-            TransitGatewayRouteTableId=tgw_table_id,
-            Filters=[{"Name": "state", "Values": ["active"]}]
-        )
+    for route in tgw_routes["Routes"]:
+        if "DestinationCidrBlock" in route:
+            cidr = route["DestinationCidrBlock"]
 
-        for route in tgw_routes["Routes"]:
-            if "DestinationCidrBlock" in route:
-                cidr = route["DestinationCidrBlock"]
+            # Ignore default route
+            if cidr == "0.0.0.0/0":
+                continue
 
-                # Ignore default route
-                if cidr == "0.0.0.0/0":
-                    continue
-
-                existing_network = ipaddress.ip_network(cidr)
-                if input_network.overlaps(existing_network):
-                    overlaps_found.append({
-                        "TransitGatewayRouteTableId": tgw_table_id,
-                        "OverlappingCIDR": cidr
-                    })
+            existing_network = ipaddress.ip_network(cidr)
+            if input_network.overlaps(existing_network):
+                overlaps_found.append({
+                    "TransitGatewayRouteTableId": tgw_table_id,
+                    "OverlappingCIDR": cidr
+                })
 
     return overlaps_found
 
 # Check for CIDR overlaps
-overlapping_cidrs = check_cidr_overlap(input_cidr)
+overlapping_cidrs = check_cidr_overlap(input_cidr, tgw_table_id)
 
 if overlapping_cidrs:
-    message = f"🚨 **CIDR Overlap Detected for {customer_name}!** 🚨\n"
-    message += f"🔹 **Input CIDR:** {input_cidr}\n\n"
-    message += "**🔹 Overlapping CIDRs:**\n"
+    message = f"\U0001F6A8 **CIDR Overlap Detected for {customer_name}!** \U0001F6A8\n"
+    message += f"\U0001F537 **Input CIDR:** {input_cidr}\n\n"
+    message += "**\U0001F537 Overlapping CIDRs:**\n"
     for overlap in overlapping_cidrs:
-        message += f"🔹 {overlap['OverlappingCIDR']} (TGW Route Table: {overlap['TransitGatewayRouteTableId']})\n"
+        message += f"\U0001F537 {overlap['OverlappingCIDR']} (TGW Route Table: {overlap['TransitGatewayRouteTableId']})\n"
 
     print("CIDR Overlap detected. Sending SNS alert...")
     
@@ -66,4 +65,4 @@ if overlapping_cidrs:
 
     print("Alert sent successfully!")
 else:
-    print(f"No CIDR overlaps found for {input_cidr}.")
+    print(f"No CIDR overlaps found for {input_cidr} in TGW Route Table {tgw_table_id}.")
