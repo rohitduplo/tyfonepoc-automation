@@ -59,7 +59,7 @@ jobs:
           AWS_DEFAULT_REGION: us-east-1
         run: |
           echo "customer_name: ${{ github.event.client_payload.customer_name }}"
-          
+          customer_name= $customer_name
           EXTRA_DATA_JSON='${{ github.event.client_payload.extra_data }}'
           ipv4_cidr=$(echo "$EXTRA_DATA_JSON" | jq -r '.ipv4_cidr')
           echo "ipv4_cidr: $ipv4_cidr"
@@ -67,10 +67,10 @@ jobs:
           # Fetch all Transit Gateway Route Tables
           TGW_RT_IDS=$(aws ec2 describe-transit-gateway-route-tables --query 'TransitGatewayRouteTables[*].TransitGatewayRouteTableId' --output text)
       
-          MESSAGE="🚨 **CIDR Overlap Detected!** 🚨\n\n"
-          MESSAGE+="🔹 **Customer Name:** $customer_name\n"
-          MESSAGE+="🔹 **Input CIDR:** $ipv4_cidr\n\n"
-          MESSAGE+="**🔹 Overlapping CIDRs:**\n"
+          MESSAGE=$(printf "🚨 **CIDR Overlap Detected!** 🚨\n\n")
+          MESSAGE+=$(printf "🔹 **Customer Name:** $customer_name\n")
+          MESSAGE+=$(printf "🔹 **Input CIDR:** $ipv4_cidr\n\n")
+          MESSAGE+=$(printf "**🔹 Overlapping CIDRs:**\n")
       
           for TGW_RT_ID in $TGW_RT_IDS; do
             echo "Checking TGW Route Table: $TGW_RT_ID"
@@ -97,5 +97,5 @@ jobs:
           aws sns publish \
             --topic-arn arn:aws:sns:us-east-1:590184024707:tyfone-poc \
             --message "$MESSAGE" \
-            --subject "🚨 CIDR Overlap Alert for $customer_name: $ipv4_cidr" \
+            --subject "🚨 CIDR Overlap Alert for $customer_name : $ipv4_cidr" \
             --region us-east-1
