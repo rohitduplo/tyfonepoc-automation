@@ -16,7 +16,11 @@ resource "aws_customer_gateway" "cgw" {
 
 # Reference the existing Transit Gateway
 data "aws_ec2_transit_gateway" "tgw" {
-  id = var.transit_gateway_id # Provide your TGW ID
+ filter {
+  name   = "transit-gateway-id"
+  #id = var.transit_gateway_id # Provide your TGW ID
+  values = [var.transit_gateway_id]  # Ensure this matches the exact TGW ID
+}
 }
 
 # Create the Site-to-Site VPN Connection using TGW
