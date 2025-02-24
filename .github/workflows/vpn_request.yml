@@ -58,10 +58,10 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: us-east-1
         run: |
-          echo "customer_name: ${{ github.event.client_payload.customer_name }}"
-          customer_name= $customer_name
+          customer_name="${{ github.event.client_payload.customer_name }}"
           EXTRA_DATA_JSON='${{ github.event.client_payload.extra_data }}'
           ipv4_cidr=$(echo "$EXTRA_DATA_JSON" | jq -r '.ipv4_cidr')
+          echo "customer_name: $customer_name"
           echo "ipv4_cidr: $ipv4_cidr"
       
           # Fetch all Transit Gateway Route Tables
@@ -84,7 +84,7 @@ jobs:
             for CIDR in $(echo $EXISTING_CIDRS | jq -r '.[]'); do
               if [[ "$CIDR" != "0.0.0.0/0" && "$CIDR" == "$ipv4_cidr" ]]; then
                 #MESSAGE+="🔹 $CIDR (TGW Route Table: $TGW_RT_ID)\n"
-                MESSAGE+=$(printf "🔹 $CIDR TGW Route Table: $TGW_RT_ID\n")
+                MESSAGE+=$(printf "🔹 $CIDR (TGW Route Table: $TGW_RT_ID)\n")
               fi
             done
           done
