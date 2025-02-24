@@ -15,8 +15,8 @@ jobs:
           echo "Customer Name: ${{ github.event.client_payload.customer_name }}"
 
           # Extract IPv4 CIDR from JSON
-          IPV4_CIDR=$(echo "$EXTRA_DATA_JSON" | jq -r '.ipv4_cidr')
-          echo "IPv4 CIDR: $IPV4_CIDR"
+          ipv4_cidr=$(echo "$EXTRA_DATA_JSON" | jq -r '.ipv4_cidr')
+          echo "ipv4_cidr: $ipv4_cidr"
           integrity_phase2=$(echo "$EXTRA_DATA_JSON" | jq -r '.integrity_phase2')
           echo "integrity_phase2: $integrity_phase2"
           dh_group_phase2=$(echo "$EXTRA_DATA_JSON" | jq -r '.dh_group_phase2')
@@ -27,12 +27,12 @@ jobs:
           echo "ike_version_phase2: $ike_version_phase2"
           customer_gateway_ip=$(echo "$EXTRA_DATA_JSON" | jq -r '.customer_gateway_ip')
           echo "customer_gateway_ip: $customer_gateway_ip"
-          echo "VPN Routing: ${{ github.event.client_payload.vpn_routing }}"
+          echo "vpn_routing: ${{ github.event.client_payload.vpn_routing }}"
           echo "ASN: ${{ github.event.client_payload.asn }}"
-          echo "Encryption Phase1: ${{ github.event.client_payload.encryption_phase1 }}"
-          echo "Encryption Phase2: ${{ github.event.client_payload.encryption_phase2 }}"
-          echo "Integrity Phase1: ${{ github.event.client_payload.integrity_phase1 }}"
-          echo "DH Group Phase1: ${{ github.event.client_payload.dh_group_phase1 }}"
-          echo "Lifetime Phase1: ${{ github.event.client_payload.lifetime_phase1 }}"
-          echo "IKE Version Phase1: ${{ github.event.client_payload.ike_version_phase1 }}"
+          echo "encryption_phase1: ${{ github.event.client_payload.encryption_phase1 }}"
+          echo "encryption_phase2: ${{ github.event.client_payload.encryption_phase2 }}"
+          echo "integrity_phase1: ${{ github.event.client_payload.integrity_phase1 }}"
+          echo "dh_group_phase1: ${{ github.event.client_payload.dh_group_phase1 }}"
+          echo "lifetime_phase1: ${{ github.event.client_payload.lifetime_phase1 }}"
+          echo "ike_version_phase1: ${{ github.event.client_payload.ike_version_phase1 }}"
           echo "Extra Data: $EXTRA_DATA_JSON"
