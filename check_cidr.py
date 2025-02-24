@@ -2,6 +2,7 @@ import json
 import boto3
 import ipaddress
 import os
+import sys
 
 # Load CIDR from GitHub Environment
 input_cidr = os.getenv("IPV4_CIDR")
@@ -62,6 +63,7 @@ if overlapping_cidrs:
         Subject="⚠️ CIDR Overlap Detected",
         Message=message
     )
+    print("Alert sent successfully!")
     print("overlap=true")
         sys.exit(1)  # Exit with an error to stop Terraform deployment
 else:
