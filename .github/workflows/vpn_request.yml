@@ -14,31 +14,33 @@ jobs:
           echo "Extracted JSON: $EXTRA_DATA_JSON"
           echo "customer_name: ${{ github.event.client_payload.customer_name }}"
 
-          # Extract IPv4 CIDR from JSON
+          # Extract values from JSON
           ipv4_cidr=$(echo "$EXTRA_DATA_JSON" | jq -r '.ipv4_cidr')
-          echo "ipv4_cidr: $ipv4_cidr"
           integrity_phase2=$(echo "$EXTRA_DATA_JSON" | jq -r '.integrity_phase2')
-          echo "integrity_phase2: $integrity_phase2"
           dh_group_phase2=$(echo "$EXTRA_DATA_JSON" | jq -r '.dh_group_phase2')
-          echo "dh_group_phase2: $dh_group_phase2"
           life_time_renegotiation=$(echo "$EXTRA_DATA_JSON" | jq -r '.life_time_renegotiation')
-          echo "life_time_renegotiation: $life_time_renegotiation"
           ike_version_phase2=$(echo "$EXTRA_DATA_JSON" | jq -r '.ike_version_phase2')
-          echo "ike_version_phase2: $ike_version_phase2"
           customer_gateway_ip=$(echo "$EXTRA_DATA_JSON" | jq -r '.customer_gateway_ip')
-          echo "customer_gateway_ip: $customer_gateway_ip"
           others=$(echo "$EXTRA_DATA_JSON" | jq -r '.others')
-          echo "others: $others"
           contact_person=$(echo "$EXTRA_DATA_JSON" | jq -r '.contact_person')
-          echo "contact_person: $contact_person"
           contact_person_email=$(echo "$EXTRA_DATA_JSON" | jq -r '.contact_person_email')
-          echo "contact_person_email: $contact_person_email"
           firewall_vendor=$(echo "$EXTRA_DATA_JSON" | jq -r '.firewall_vendor')
-          echo "firewall_vendor: $firewall_vendor"
           device_details=$(echo "$EXTRA_DATA_JSON" | jq -r '.device_details')
-          echo "device_details: $device_details"
           firewall_version=$(echo "$EXTRA_DATA_JSON" | jq -r '.firewall_version')
+
+          echo "ipv4_cidr: $ipv4_cidr"
+          echo "integrity_phase2: $integrity_phase2"
+          echo "dh_group_phase2: $dh_group_phase2"
+          echo "life_time_renegotiation: $life_time_renegotiation"
+          echo "ike_version_phase2: $ike_version_phase2"
+          echo "customer_gateway_ip: $customer_gateway_ip"
+          echo "others: $others"
+          echo "contact_person: $contact_person"
+          echo "contact_person_email: $contact_person_email"
+          echo "firewall_vendor: $firewall_vendor"
+          echo "device_details: $device_details"
           echo "firewall_version: $firewall_version"
+
           echo "vpn_routing: ${{ github.event.client_payload.vpn_routing }}"
           echo "ASN: ${{ github.event.client_payload.asn }}"
           echo "encryption_phase1: ${{ github.event.client_payload.encryption_phase1 }}"
@@ -48,3 +50,52 @@ jobs:
           echo "lifetime_phase1: ${{ github.event.client_payload.lifetime_phase1 }}"
           echo "ike_version_phase1: ${{ github.event.client_payload.ike_version_phase1 }}"
           echo "Extra Data: $EXTRA_DATA_JSON"
+
+      - name: Send SNS Alert if Overlapping
+        if: env.overlap_found == 'true'
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: us-east-1
+        run: |
+          echo "customer_name: ${{ github.event.client_payload.customer_name }}"
+          
+          EXTRA_DATA_JSON='${{ github.event.client_payload.extra_data }}'
+          ipv4_cidr=$(echo "$EXTRA_DATA_JSON" | jq -r '.ipv4_cidr')
+          echo "ipv4_cidr: $ipv4_cidr"
+      
+          # Fetch all Transit Gateway Route Tables
+          TGW_RT_IDS=$(aws ec2 describe-transit-gateway-route-tables --query 'TransitGatewayRouteTables[*].TransitGatewayRouteTableId' --output text)
+      
+          MESSAGE="🚨 **CIDR Overlap Detected!** 🚨\n\n"
+          MESSAGE+="🔹 **Customer Name:** $customer_name\n"
+          MESSAGE+="🔹 **Input CIDR:** $ipv4_cidr\n\n"
+          MESSAGE+="**🔹 Overlapping CIDRs:**\n"
+      
+          for TGW_RT_ID in $TGW_RT_IDS; do
+            echo "Checking TGW Route Table: $TGW_RT_ID"
+      
+            # Fetch CIDRs from this route table
+            EXISTING_CIDRS=$(aws ec2 search-transit-gateway-routes \
+              --transit-gateway-route-table-id $TGW_RT_ID \
+              --filters Name=type,Values=active \
+              --query 'Routes[*].DestinationCidrBlock' --output json)
+      
+            for CIDR in $(echo $EXISTING_CIDRS | jq -r '.[]'); do
+              if [[ "$CIDR" != "0.0.0.0/0" && "$CIDR" == "$ipv4_cidr" ]]; then
+                MESSAGE+="🔹 $CIDR (TGW Route Table: $TGW_RT_ID)\n"
+              fi
+            done
+          done
+      
+          if [[ "$MESSAGE" != *"Overlapping CIDRs"* ]]; then
+            echo "No overlapping CIDRs found. Exiting."
+            exit 0
+          fi
+      
+          # Send SNS Alert
+          aws sns publish \
+            --topic-arn arn:aws:sns:us-east-1:590184024707:tyfone-poc \
+            --message "$MESSAGE" \
+            --subject "🚨 CIDR Overlap Alert for $customer_name: $ipv4_cidr" \
+            --region us-east-1
