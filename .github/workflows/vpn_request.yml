@@ -8,17 +8,19 @@ jobs:
   vpn:
     runs-on: ubuntu-latest
     steps:
-      - name: Extract Extra Data
-        run: |
-            EXTRA_DATA_JSON='${{ github.event.client_payload.extra_data }}'
-            echo "Extracted JSON: $EXTRA_DATA_JSON"
-        
-            # Parse IPv4 CIDR from JSON
-            IPV4_CIDR=$(echo "$EXTRA_DATA_JSON" | jq -r '.ipv4_cidr')
-            echo "IPv4 CIDR: $IPV4_CIDR"
-            # echo "IPv4 CIDR: $IPV4_CIDR"
+      # - name: Extract Extra Data
+       # run: |
+       #     EXTRA_DATA_JSON='${{ github.event.client_payload.extra_data }}'
+       #     echo "Extracted JSON: $EXTRA_DATA_JSON"
+       # 
+       #     # Parse IPv4 CIDR from JSON
+       #     IPV4_CIDR=$(echo "$EXTRA_DATA_JSON" | jq -r '.ipv4_cidr')
+       #     echo "IPv4 CIDR: $IPV4_CIDR"
+       #    # echo "IPv4 CIDR: $IPV4_CIDR"
       - name: Print received payload
         run: |
+          EXTRA_DATA_JSON='${{ github.event.client_payload.extra_data }}'
+          echo "Extracted JSON: $EXTRA_DATA_JSON"
           echo "Customer Name: ${{ github.event.client_payload.customer_name }}"
           echo "IPv4 CIDR: $(echo "$EXTRA_DATA_JSON" | jq -r '.ipv4_cidr')
           echo "VPN Routing: ${{ github.event.client_payload.vpn_routing }}"
