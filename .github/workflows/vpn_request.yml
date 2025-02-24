@@ -16,7 +16,7 @@ jobs:
             # Parse IPv4 CIDR from JSON
             IPV4_CIDR=$(echo "$EXTRA_DATA_JSON" | jq -r '.ipv4_cidr')
             echo "IPv4 CIDR: $IPV4_CIDR"
-            shell: bash
+            # echo "IPv4 CIDR: $IPV4_CIDR"
       - name: Print received payload
         run: |
           echo "Customer Name: ${{ github.event.client_payload.customer_name }}"
