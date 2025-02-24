@@ -17,7 +17,16 @@ jobs:
           # Extract IPv4 CIDR from JSON
           IPV4_CIDR=$(echo "$EXTRA_DATA_JSON" | jq -r '.ipv4_cidr')
           echo "IPv4 CIDR: $IPV4_CIDR"
-
+          integrity_phase2=$(echo "$EXTRA_DATA_JSON" | jq -r '.integrity_phase2')
+          echo "integrity_phase2: $integrity_phase2"
+          dh_group_phase2=$(echo "$EXTRA_DATA_JSON" | jq -r '.dh_group_phase2')
+          echo "dh_group_phase2: $dh_group_phase2"
+          life_time_renegotiation=$(echo "$EXTRA_DATA_JSON" | jq -r '.life_time_renegotiation')
+          echo "life_time_renegotiation: $life_time_renegotiation"
+          ike_version_phase2=$(echo "$EXTRA_DATA_JSON" | jq -r '.ike_version_phase2')
+          echo "ike_version_phase2: $ike_version_phase2"
+          customer_gateway_ip=$(echo "$EXTRA_DATA_JSON" | jq -r '.customer_gateway_ip')
+          echo "customer_gateway_ip: $customer_gateway_ip"
           echo "VPN Routing: ${{ github.event.client_payload.vpn_routing }}"
           echo "ASN: ${{ github.event.client_payload.asn }}"
           echo "Encryption Phase1: ${{ github.event.client_payload.encryption_phase1 }}"
