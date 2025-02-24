@@ -2,10 +2,14 @@ import json
 import boto3
 import ipaddress
 import sys
+import os
+
+# AWS Region
+AWS_REGION = os.getenv("AWS_REGION", "us-east-1")  # Default to us-east-1 if not set
 
 # Initialize AWS Clients
-ec2 = boto3.client("ec2")
-sns = boto3.client("sns")
+ec2 = boto3.client("ec2", region_name=AWS_REGION)
+sns = boto3.client("sns", region_name=AWS_REGION)
 
 # SNS Topic ARN
 SNS_TOPIC_ARN = "arn:aws:sns:us-east-1:590184024707:tyfone-poc"
