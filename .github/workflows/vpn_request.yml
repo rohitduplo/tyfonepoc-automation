@@ -1,13 +1,23 @@
-name: Debug Workflow
+name: VPN Request Workflow
 
-on: [push]  # Runs on every push (modify as needed)
+on:
+  repository_dispatch:
+    types: [vpn_request]  # This must match `event_type` in your Apps Script
 
 jobs:
-  debug:
+  vpn:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
-      - name: List all environment variables
-        run: env
+      - name: Print received payload
+        run: |
+          echo "Customer Name: ${{ github.event.client_payload.customer_name }}"
+          echo "IPv4 CIDR: ${{ github.event.client_payload.ipv4_cidr }}"
+          echo "VPN Routing: ${{ github.event.client_payload.vpn_routing }}"
+          echo "ASN: ${{ github.event.client_payload.asn }}"
+          echo "Encryption Phase1: ${{ github.event.client_payload.encryption_phase1 }}"
+          echo "Encryption Phase2: ${{ github.event.client_payload.encryption_phase2 }}"
+          echo "Integrity Phase1: ${{ github.event.client_payload.integrity_phase1 }}"
+          echo "DH Group Phase1: ${{ github.event.client_payload.dh_group_phase1 }}"
+          echo "Lifetime Phase1: ${{ github.event.client_payload.lifetime_phase1 }}"
+          echo "IKE Version Phase1: ${{ github.event.client_payload.ike_version_phase1 }}"
+          echo "Extra Data: ${{ github.event.client_payload.extra_data }}"
