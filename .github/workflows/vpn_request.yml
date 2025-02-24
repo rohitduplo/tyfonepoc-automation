@@ -73,7 +73,7 @@ jobs:
           MESSAGE+="**🔹 Overlapping CIDRs:**\n"
 
           # Flag to check if we found any overlap
-          overlap_found=false
+          #overlap_found=false
           
           for TGW_RT_ID in $TGW_RT_IDS; do
             echo "Checking TGW Route Table: $TGW_RT_ID"
