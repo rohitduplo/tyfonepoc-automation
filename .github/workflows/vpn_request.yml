@@ -83,7 +83,8 @@ jobs:
       
             for CIDR in $(echo $EXISTING_CIDRS | jq -r '.[]'); do
               if [[ "$CIDR" != "0.0.0.0/0" && "$CIDR" == "$ipv4_cidr" ]]; then
-                MESSAGE+="🔹 $CIDR (TGW Route Table: $TGW_RT_ID)\n"
+                #MESSAGE+="🔹 $CIDR (TGW Route Table: $TGW_RT_ID)\n"
+                MESSAGE+=$(printf "🔹 $CIDR TGW Route Table: $TGW_RT_ID\n")
               fi
             done
           done
