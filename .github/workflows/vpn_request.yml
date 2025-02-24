@@ -111,7 +111,7 @@ jobs:
             echo "TF_VAR_ike_version_phase2=$ike_version_phase2"
             echo "TF_VAR_customer_gateway_ip=$customer_gateway_ip"
             echo "TF_VAR_vpn_routing=$vpn_routing"
-            echo "TF_VAR_asn=$asn"
+            echo "TF_VAR_asn=$ASN"
             echo "TF_VAR_encryption_phase1=$encryption_phase1"
             echo "TF_VAR_encryption_phase2=$encryption_phase2"
             echo "TF_VAR_integrity_phase1=$integrity_phase1"
@@ -132,7 +132,7 @@ jobs:
           echo "TF_VAR_ike_version_phase2=$ike_version_phase2"
           echo "TF_VAR_customer_gateway_ip=$customer_gateway_ip"
           echo "TF_VAR_vpn_routing=$vpn_routing"
-          echo "TF_VAR_asn=$asn"
+          echo "TF_VAR_ASN=$asn"
           echo "TF_VAR_encryption_phase1=$encryption_phase1"
           echo "TF_VAR_encryption_phase2=$encryption_phase2"
           echo "TF_VAR_integrity_phase1=$integrity_phase1"
@@ -172,6 +172,6 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: "us-east-1"
-          TF_VAR_asn: ${{ secrets.TF_VAR_asn }}
+          #TF_VAR_asn: ${{ secrets.TF_VAR_asn }}
           TF_VAR_transit_gateway_id: ${{ secrets.TF_VAR_transit_gateway_id }}
           TF_VAR_transit_gateway_route_table_id: ${{ secrets.TF_VAR_transit_gateway_route_table_id }}
