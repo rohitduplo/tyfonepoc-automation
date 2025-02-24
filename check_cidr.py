@@ -1,20 +1,14 @@
 import json
 import boto3
 import ipaddress
-import os
-
-# Load CIDR from GitHub Environment
-input_cidr = os.getenv("IPV4_CIDR")
-customer_name = os.getenv("CUSTOMER_NAME")
-sns_topic_arn = os.getenv("SNS_TOPIC_ARN")
-
-if not input_cidr:
-    print("Error: CIDR is missing from the environment!")
-    exit(1)
+import sys
 
 # Initialize AWS Clients
-ec2 = boto3.client("ec2", region_name=os.getenv("AWS_REGION"))
-sns = boto3.client("sns", region_name=os.getenv("AWS_REGION"))
+ec2 = boto3.client("ec2")
+sns = boto3.client("sns")
+
+# SNS Topic ARN
+SNS_TOPIC_ARN = "arn:aws:sns:us-east-1:590184024707:tyfone-poc"
 
 def check_cidr_overlap(input_cidr):
     input_network = ipaddress.ip_network(input_cidr)
@@ -33,37 +27,37 @@ def check_cidr_overlap(input_cidr):
             if "DestinationCidrBlock" in route:
                 cidr = route["DestinationCidrBlock"]
 
-                # Ignore default route
+                # Skip default route
                 if cidr == "0.0.0.0/0":
-                    continue
+                    continue  
 
                 existing_network = ipaddress.ip_network(cidr)
+
                 if input_network.overlaps(existing_network):
                     overlaps_found.append({
                         "TransitGatewayRouteTableId": tgw_table_id,
                         "OverlappingCIDR": cidr
                     })
 
-    return overlaps_found
+    if overlaps_found:
+        message = f"🚨 CIDR Overlap Detected! 🚨\n\n"
+        message += f"🔹 **Input CIDR:** {input_cidr}\n\n"
+        message += "**🔹 Overlapping CIDRs:**\n"
+        for overlap in overlaps_found:
+            message += f"🔹 {overlap['OverlappingCIDR']} (TGW Route Table: {overlap['TransitGatewayRouteTableId']})\n"
 
-# Check for CIDR overlaps
-overlapping_cidrs = check_cidr_overlap(input_cidr)
+        sns.publish(
+            TopicArn=SNS_TOPIC_ARN,
+            Subject="⚠️ CIDR Overlap Detected in AWS Transit Gateway",
+            Message=message
+        )
 
-if overlapping_cidrs:
-    message = f"🚨 **CIDR Overlap Detected for {customer_name}!** 🚨\n"
-    message += f"🔹 **Input CIDR:** {input_cidr}\n\n"
-    message += "**🔹 Overlapping CIDRs:**\n"
-    for overlap in overlapping_cidrs:
-        message += f"🔹 {overlap['OverlappingCIDR']} (TGW Route Table: {overlap['TransitGatewayRouteTableId']})\n"
+        print("overlap=true")
+        sys.exit(1)  # Exit with an error to stop Terraform deployment
+    else:
+        print("overlap=false")
+        sys.exit(0)  # Continue to Terraform deployment
 
-    print("CIDR Overlap detected. Sending SNS alert...")
-    
-    sns.publish(
-        TopicArn=sns_topic_arn,
-        Subject="⚠️ CIDR Overlap Detected",
-        Message=message
-    )
-
-    print("Alert sent successfully!")
-else:
-    print(f"No CIDR overlaps found for {input_cidr}.")
+if __name__ == "__main__":
+    cidr_to_check = sys.argv[1]
+    check_cidr_overlap(cidr_to_check)
