@@ -17,7 +17,7 @@ ec2 = boto3.client("ec2", region_name=os.getenv("AWS_REGION"))
 sns = boto3.client("sns", region_name=os.getenv("AWS_REGION"))
 
 # Hardcoded Transit Gateway Route Table ID
-tgw_table_id = "tgw-00300246ad005bc2b"
+tgw_table_id = "tgw-rtb-08b96e71763e7b5ad"
 
 def check_cidr_overlap(input_cidr, tgw_table_id):
     input_network = ipaddress.ip_network(input_cidr)
