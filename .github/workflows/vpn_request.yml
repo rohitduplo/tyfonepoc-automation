@@ -142,9 +142,19 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: "us-east-1"
           SNS_TOPIC_ARN: "arn:aws:sns:us-east-1:590184024707:tyfone-poc"
-        run: python check_cidr.py
+        run: |
+            output=$(python check_cidr.py)
+            echo "$output"
+            if echo "$output" | grep -q "overlap=false"; then
+              echo "overlap=false" >> "$GITHUB_ENV"
+              echo "::set-output name=overlap::false"
+            else
+              echo "overlap=true" >> "$GITHUB_ENV"
+              echo "::set-output name=overlap::true"
+            fi
       - name: Trigger Terraform (if no overlap)
-        if: steps.cidr_check.outputs.overlap == 'false'
+        if: env.overlap == 'false'
+        #if: steps.cidr_check.outputs.overlap == 'false'
         run: |
           echo "No CIDR overlap detected. Proceeding with Terraform deployment..."
           terraform init
