@@ -12,7 +12,7 @@ jobs:
         run: |
           EXTRA_DATA_JSON='${{ github.event.client_payload.extra_data }}'
           echo "Extracted JSON: $EXTRA_DATA_JSON"
-          echo "Customer Name: ${{ github.event.client_payload.customer_name }}"
+          echo "customer_name: ${{ github.event.client_payload.customer_name }}"
 
           # Extract IPv4 CIDR from JSON
           ipv4_cidr=$(echo "$EXTRA_DATA_JSON" | jq -r '.ipv4_cidr')
