@@ -66,7 +66,7 @@ jobs:
       
           # Fetch all Transit Gateway Route Tables
           TGW_RT_IDS=$(aws ec2 describe-transit-gateway-route-tables --query 'TransitGatewayRouteTables[*].TransitGatewayRouteTableId' --output text)
-      
+          
           MESSAGE="🚨 **CIDR Overlap Detected!** 🚨\n\n"
           MESSAGE+="🔹 **Customer Name:** $customer_name\n"
           MESSAGE+="🔹 **Input CIDR:** $ipv4_cidr\n\n"
@@ -74,7 +74,7 @@ jobs:
 
           # Flag to check if we found any overlap
           #overlap_found=false
-          
+          echo "Retrieved TGW Route Tables: $TGW_RT_IDS"
           for TGW_RT_ID in $TGW_RT_IDS; do
             echo "Checking TGW Route Table: $TGW_RT_ID"
       
@@ -87,8 +87,10 @@ jobs:
             echo "Existing CIDRs in TGW Route Table $TGW_RT_ID: $EXISTING_CIDRS"
       
             for CIDR in $(echo $EXISTING_CIDRS | jq -r '.[]'); do
+              echo "Checking CIDR: $CIDR"
               if [[ "$CIDR" != "0.0.0.0/0" && "$CIDR" == "$ipv4_cidr" ]]; then
                 #MESSAGE+="🔹 $CIDR (TGW Route Table: $TGW_RT_ID)\n"
+                echo "Match Found! CIDR: $CIDR in TGW Route Table: $TGW_RT_ID"
                 MESSAGE+="🔹 $CIDR (TGW Route Table: $TGW_RT_ID)\n"
                 overlap_found=true
               fi
@@ -98,6 +100,9 @@ jobs:
             echo "No overlapping CIDRs found. Exiting."
             exit 0
           fi
+          echo "Final TGW Route Table IDs: $TGW_RT_IDS"
+          echo "Final CIDRs checked: $EXISTING_CIDRS"
+          echo "Final Message Before Sending:"
           echo -e "Final Message:\n$MESSAGE"
           #if [[ "$MESSAGE" != *"Overlapping CIDRs"* ]]; then
           #  echo "No overlapping CIDRs found. Exiting."
