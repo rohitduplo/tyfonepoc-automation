@@ -65,6 +65,7 @@ if overlapping_cidrs:
     print("overlap=true")
         sys.exit(1)  # Exit with an error to stop Terraform deployment
 else:
+        print(f"No CIDR overlaps found for {input_cidr} in TGW Route Table {tgw_table_id}.")
         print("overlap=false")
         sys.exit(0)  # Continue to Terraform deployment
 #    print("Alert sent successfully!")
