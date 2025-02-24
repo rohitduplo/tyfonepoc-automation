@@ -1,7 +1,7 @@
-provider "aws" {
-  profile = var.aws_profile # Use AWS profile for local testing
-  region  = var.aws_region
-}
+#provider "aws" {
+#  profile = var.aws_profile # Use AWS profile for local testing
+#  region  = var.aws_region
+#}
 
 # Create a Customer Gateway for VPN
 resource "aws_customer_gateway" "cgw" {
