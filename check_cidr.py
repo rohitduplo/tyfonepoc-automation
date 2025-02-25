@@ -6,7 +6,7 @@ import sys
 
 # Load CIDR from GitHub Environment
 input_cidr = os.getenv("IPV4_CIDR")
-customer_name = os.getenv("CUSTOMER_NAME")
+customer_name = os.getenv("customer_name")
 sns_topic_arn = os.getenv("SNS_TOPIC_ARN")
 print(customer_name)
 print(input_cidr)
