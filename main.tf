@@ -2,6 +2,18 @@
 #  profile = var.aws_profile # Use AWS profile for local testing
 #  region  = var.aws_region
 #}
+terraform {
+
+  backend "s3" {
+    bucket         = "tyfonepoc-automation"
+    key            = "customer"
+    region         = var.AWS_REGION
+  }
+}
+
+provider "aws" {
+  region = var.AWS_REGION
+}
 
 # Create a Customer Gateway for VPN
 resource "aws_customer_gateway" "cgw" {
