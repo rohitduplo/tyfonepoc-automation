@@ -8,9 +8,13 @@ import sys
 input_cidr = os.getenv("IPV4_CIDR")
 customer_name = os.getenv("customer_name")
 sns_topic_arn = os.getenv("SNS_TOPIC_ARN")
+vpn_routing = os.getenv("vpn_routing")
+ASN = os.getenv("ASN")
 print(customer_name)
 print(input_cidr)
 print(sns_topic_arn)
+print(vpn_routing)
+print(ASN)
 
 if not input_cidr:
     print("Error: CIDR is missing from the environment!")
