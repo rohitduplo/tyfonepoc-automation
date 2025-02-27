@@ -74,6 +74,12 @@ resource "aws_vpn_connection" "vpn" {
     Name = "${var.customer_name}-vpn"
   }
 }
+# Tag the VPN attachment with the customer name
+resource "aws_ec2_tag" "vpn_attachment_tag" {
+  resource_id = aws_vpn_connection.vpn.transit_gateway_attachment_id
+  key         = "Name"
+  value       = "${var.customer_name}-tgw-attachment"
+}
 
 # Add route to Transit Gateway Route Table if VPN uses Static Routing
 resource "aws_ec2_transit_gateway_route" "vpn_route" {
