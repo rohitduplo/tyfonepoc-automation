@@ -6,7 +6,8 @@ terraform {
 
   backend "s3" {
     bucket         = "tyfonepoc-automation"
-    key            = "customer"
+    #key            = "customer"
+    key            = var.customer_name
     region         = "us-east-1"
   }
 }
