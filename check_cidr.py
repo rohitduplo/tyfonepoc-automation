@@ -14,7 +14,7 @@ print(customer_name)
 print(input_cidr)
 print(sns_topic_arn)
 print(vpn_routing)
-print(ASN)
+print(asn)
 
 if not input_cidr:
     print("Error: CIDR is missing from the environment!")
