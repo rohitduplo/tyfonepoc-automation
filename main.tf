@@ -7,12 +7,12 @@ terraform {
   backend "s3" {
     bucket         = "tyfonepoc-automation"
     key            = "customer"
-    region         = var.AWS_REGION
+    region         = "us-east-1"
   }
 }
 
 provider "aws" {
-  region = var.AWS_REGION
+  region = "us-east-1"
 }
 
 # Create a Customer Gateway for VPN
