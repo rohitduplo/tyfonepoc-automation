@@ -158,7 +158,12 @@ jobs:
           python-version: '3.9'
       - name: Install Dependencies
         run: pip install boto3
-
+      - name: Debug Check Files & Current Directory
+        run: |
+          echo "Current directory:"
+          pwd  # Print the working directory
+          echo "Listing all files:"
+          ls -R  # Print all files recursively to locate check_cidr.py
       - name: Run CIDR Overlap Check
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
