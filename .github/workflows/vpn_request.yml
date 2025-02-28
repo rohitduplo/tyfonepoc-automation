@@ -5,7 +5,7 @@ on:
     types: [vpn_request]
 
 jobs:
-  setup:
+  vpn:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
@@ -15,7 +15,6 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: '3.x'
-      
       - name: Install Terraform
         uses: hashicorp/setup-terraform@v2
         with:
@@ -24,10 +23,6 @@ jobs:
       - name: Verify Terraform Installation
         run: terraform --version
 
-  extract_data:
-    runs-on: ubuntu-latest
-    needs: setup
-    steps:
       - name: Extract VPN Request Data
         run: |
           echo "Extracting data from GitHub event..."
@@ -145,33 +140,9 @@ jobs:
           echo "TF_VAR_lifetime_phase1=$lifetime_phase1"
           echo "TF_VAR_ike_version_phase1=$ike_version_phase1"
 
+      - name: Install Dependencies
+        run: pip install boto3
 
-  check_cidr:
-    runs-on: ubuntu-latest
-    needs:
-      - setup
-      - extract_data
-    steps:
-      #- name: Checkout Repository
-      #  uses: actions/checkout@v4
-      #- name: Set Up Python
-      #  uses: actions/setup-python@v4
-      #  with:
-      #    python-version: '3.9'
-      #- name: Install Dependencies
-      #  run: pip install boto3
-      #- name: Debug Check Files & Current Directory
-      #  run: |
-      #    echo "Current directory:"
-      #    pwd  # Print the working directory
-      #    echo "Listing all files:"
-      #    ls -R  # Print all files recursively to locate check_cidr.py
-      #    echo "Python version:"
-      #    python --version  # Confirm Python version
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-      - name: Debug Check Current Directory
-        run: pwd && ls -lah  # Print working directory and file list
       - name: Run CIDR Overlap Check
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -179,27 +150,20 @@ jobs:
           AWS_REGION: "us-east-1"
           SNS_TOPIC_ARN: "arn:aws:sns:us-east-1:590184024707:tyfone-poc"
         run: |
-          output=$(python check_cidr.py)
-          echo "$output"
-          if echo "$output" | grep -q "overlap=false"; then
-            echo "overlap=false" >> "$GITHUB_ENV"
-          else
-            echo "overlap=true" >> "$GITHUB_ENV"
-          fi
-
-  deploy:
-    runs-on: ubuntu-latest
-    needs: 
-     - setup
-     - extract_data
-     - check_cidr
-    if: needs.check_cidr.outputs.overlap == 'false'
-    #if: env.overlap == 'false'
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
+            output=$(python check_cidr.py)
+            echo "$output"
+            if echo "$output" | grep -q "overlap=false"; then
+              echo "overlap=false" >> "$GITHUB_ENV"
+              echo "::set-output name=overlap::false"
+            else
+              echo "overlap=true" >> "$GITHUB_ENV"
+              echo "::set-output name=overlap::true"
+            fi
       - name: Trigger Terraform (if no overlap)
+        if: env.overlap == 'false'
+        #if: steps.cidr_check.outputs.overlap == 'false'
         run: |
+          env | grep TF_VAR_
           echo "No CIDR overlap detected. Proceeding with Terraform deployment..."
           terraform init -backend-config="key=${customer_name}.tfstate"
           terraform plan
@@ -208,5 +172,6 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: "us-east-1"
+          #TF_VAR_asn: ${{ secrets.TF_VAR_asn }}
           TF_VAR_transit_gateway_id: ${{ secrets.TF_VAR_transit_gateway_id }}
           TF_VAR_transit_gateway_route_table_id: ${{ secrets.TF_VAR_transit_gateway_route_table_id }}
