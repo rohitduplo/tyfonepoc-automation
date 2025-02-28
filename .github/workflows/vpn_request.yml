@@ -168,6 +168,8 @@ jobs:
       #    ls -R  # Print all files recursively to locate check_cidr.py
       #    echo "Python version:"
       #    python --version  # Confirm Python version
+      - name: Debug Check Current Directory
+        run: pwd && ls -lah  # Print working directory and file list
       - name: Run CIDR Overlap Check
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
