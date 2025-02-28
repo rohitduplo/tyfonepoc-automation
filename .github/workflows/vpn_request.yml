@@ -194,6 +194,8 @@ jobs:
     if: needs.check_cidr.outputs.overlap == 'false'
     #if: env.overlap == 'false'
     steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
       - name: Trigger Terraform (if no overlap)
         run: |
           echo "No CIDR overlap detected. Proceeding with Terraform deployment..."
