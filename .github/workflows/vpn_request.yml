@@ -147,7 +147,7 @@ jobs:
 
 
   check_cidr:
-    runs-on: setup
+    runs-on: ubuntu-latest
     needs: extract_data
     steps:
       - name: Checkout Repository
