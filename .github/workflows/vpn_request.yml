@@ -28,6 +28,9 @@ jobs:
     runs-on: ubuntu-latest
     needs: setup
     steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+      
       - name: Extract VPN Request Data
         run: |
           echo "Extracting data from GitHub event..."
@@ -41,20 +44,8 @@ jobs:
           life_time_renegotiation=$(echo "$EXTRA_DATA_JSON" | jq -r '.life_time_renegotiation')
           ike_version_phase2=$(echo "$EXTRA_DATA_JSON" | jq -r '.ike_version_phase2')
           customer_gateway_ip=$(echo "$EXTRA_DATA_JSON" | jq -r '.customer_gateway_ip')
-          others=$(echo "$EXTRA_DATA_JSON" | jq -r '.others')
-          contact_person=$(echo "$EXTRA_DATA_JSON" | jq -r '.contact_person')
-          contact_person_email=$(echo "$EXTRA_DATA_JSON" | jq -r '.contact_person_email')
-          firewall_vendor=$(echo "$EXTRA_DATA_JSON" | jq -r '.firewall_vendor')
-          device_details=$(echo "$EXTRA_DATA_JSON" | jq -r '.device_details')
-          firewall_version=$(echo "$EXTRA_DATA_JSON" | jq -r '.firewall_version')
           vpn_routing="${{ github.event.client_payload.vpn_routing }}"
           asn="${{ github.event.client_payload.asn }}"
-          encryption_phase1="${{ github.event.client_payload.encryption_phase1 }}"
-          encryption_phase2="${{ github.event.client_payload.encryption_phase2 }}"
-          integrity_phase1="${{ github.event.client_payload.integrity_phase1 }}"
-          dh_group_phase1="${{ github.event.client_payload.dh_group_phase1 }}"
-          lifetime_phase1="${{ github.event.client_payload.lifetime_phase1 }}"
-          ike_version_phase1="${{ github.event.client_payload.ike_version_phase1 }}"
 
           echo "IPV4_CIDR=$ipv4_cidr" >> "$GITHUB_ENV"
           echo "customer_name=$customer_name" >> "$GITHUB_ENV"
@@ -72,6 +63,9 @@ jobs:
     outputs:
       overlap: ${{ steps.check.outputs.overlap }}
     steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
       - name: Install Dependencies
         run: pip install boto3
 
@@ -83,11 +77,17 @@ jobs:
           AWS_REGION: "us-east-1"
           SNS_TOPIC_ARN: "arn:aws:sns:us-east-1:590184024707:tyfone-poc"
         run: |
+          if [ ! -f check_cidr.py ]; then
+            echo "Error: check_cidr.py not found!"
+            exit 1
+          fi
           output=$(python check_cidr.py)
           echo "$output"
           if echo "$output" | grep -q "overlap=false"; then
+            echo "overlap=false" >> "$GITHUB_ENV"
             echo "::set-output name=overlap::false"
           else
+            echo "overlap=true" >> "$GITHUB_ENV"
             echo "::set-output name=overlap::true"
           fi
 
@@ -96,6 +96,9 @@ jobs:
     needs: check_cidr
     if: needs.check_cidr.outputs.overlap == 'false'
     steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+      
       - name: Trigger Terraform (if no overlap)
         run: |
           echo "No CIDR overlap detected. Proceeding with Terraform deployment..."
