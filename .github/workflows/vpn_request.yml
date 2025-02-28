@@ -171,7 +171,8 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     needs: check_cidr
-    if: env.overlap == 'false'
+    if: needs.check_cidr.outputs.overlap == 'false'
+    #if: env.overlap == 'false'
     steps:
       - name: Trigger Terraform (if no overlap)
         run: |
