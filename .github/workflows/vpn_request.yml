@@ -5,7 +5,7 @@ on:
     types: [vpn_request]
 
 jobs:
-  vpn:
+  setup:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
@@ -15,6 +15,7 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: '3.x'
+      
       - name: Install Terraform
         uses: hashicorp/setup-terraform@v2
         with:
@@ -23,15 +24,16 @@ jobs:
       - name: Verify Terraform Installation
         run: terraform --version
 
+  extract_data:
+    runs-on: ubuntu-latest
+    needs: setup
+    steps:
       - name: Extract VPN Request Data
         run: |
           echo "Extracting data from GitHub event..."
-          
-          # Extract JSON from payload
           EXTRA_DATA_JSON='${{ github.event.client_payload.extra_data }}'
           echo "Extracted JSON: $EXTRA_DATA_JSON"
 
-          # Extract variables
           ipv4_cidr=$(echo "$EXTRA_DATA_JSON" | jq -r '.ipv4_cidr')
           customer_name="${{ github.event.client_payload.customer_name }}"
           integrity_phase2=$(echo "$EXTRA_DATA_JSON" | jq -r '.integrity_phase2')
@@ -54,92 +56,20 @@ jobs:
           lifetime_phase1="${{ github.event.client_payload.lifetime_phase1 }}"
           ike_version_phase1="${{ github.event.client_payload.ike_version_phase1 }}"
 
-          echo "CIDR: $ipv4_cidr"
-          echo "customer_name: $customer_name"
-          echo "integrity_phase2: $integrity_phase2"
-          echo "dh_group_phase2: $dh_group_phase2"
-          echo "life_time_renegotiation: $life_time_renegotiation"
-          echo "ike_version_phase2: $ike_version_phase2"
-          echo "customer_gateway_ip: $customer_gateway_ip"
-          echo "others: $others"
-          echo "contact_person: $contact_person"
-          echo "contact_person_email: $contact_person_email"
-          echo "firewall_vendor: $firewall_vendor"
-          echo "device_details: $device_details"
-          echo "firewall_version: $firewall_version"
-          echo "vpn_routing: $vpn_routing"
-          echo "asn: $asn"
-          echo "encryption_phase1: $encryption_phase1"
-          echo "encryption_phase2: $encryption_phase2"
-          echo "integrity_phase1: $integrity_phase1"
-          echo "dh_group_phase1: $dh_group_phase1"
-          echo "lifetime_phase1: $lifetime_phase1"
-          echo "ike_version_phase1: $ike_version_phase1"
+          echo "IPV4_CIDR=$ipv4_cidr" >> "$GITHUB_ENV"
+          echo "customer_name=$customer_name" >> "$GITHUB_ENV"
+          echo "integrity_phase2=$integrity_phase2" >> "$GITHUB_ENV"
+          echo "dh_group_phase2=$dh_group_phase2" >> "$GITHUB_ENV"
+          echo "life_time_renegotiation=$life_time_renegotiation" >> "$GITHUB_ENV"
+          echo "ike_version_phase2=$ike_version_phase2" >> "$GITHUB_ENV"
+          echo "customer_gateway_ip=$customer_gateway_ip" >> "$GITHUB_ENV"
+          echo "vpn_routing=$vpn_routing" >> "$GITHUB_ENV"
+          echo "asn=$asn" >> "$GITHUB_ENV"
 
-          # Export values for next steps
-          {
-            echo "IPV4_CIDR=$ipv4_cidr"
-            echo "customer_name=$customer_name"
-            echo "integrity_phase2=$integrity_phase2"
-            echo "dh_group_phase2=$dh_group_phase2"
-            echo "life_time_renegotiation=$life_time_renegotiation"
-            echo "ike_version_phase2=$ike_version_phase2"
-            echo "customer_gateway_ip=$customer_gateway_ip"
-            echo "others=$others"
-            echo "contact_person=$contact_person"
-            echo "contact_person_email=$contact_person_email"
-            echo "firewall_vendor=$firewall_vendor"
-            echo "device_details=$device_details"
-            echo "firewall_version=$firewall_version"
-            echo "vpn_routing=$vpn_routing"
-            echo "asn=$asn"
-            echo "encryption_phase1=$encryption_phase1"
-            echo "encryption_phase2=$encryption_phase2"
-            echo "integrity_phase1=$integrity_phase1"
-            echo "dh_group_phase1=$dh_group_phase1"
-            echo "lifetime_phase1=$lifetime_phase1"
-            echo "ike_version_phase1=$ike_version_phase1"
-          } >> "$GITHUB_ENV"
-
-          ######Terraform Vars###########
-          {
-            echo "TF_VAR_customer_name=$customer_name"
-            echo "TF_VAR_ipv4_cidr=$ipv4_cidr"
-            echo "TF_VAR_integrity_phase2=$integrity_phase2"
-            echo "TF_VAR_dh_group_phase2=$dh_group_phase2"
-            echo "TF_VAR_life_time_renegotiation=$life_time_renegotiation"
-            echo "TF_VAR_ike_version_phase2=$ike_version_phase2"
-            echo "TF_VAR_customer_gateway_ip=$customer_gateway_ip"
-            echo "TF_VAR_vpn_routing=$vpn_routing"
-            echo "TF_VAR_asn=$asn"
-            echo "TF_VAR_encryption_phase1=$encryption_phase1"
-            echo "TF_VAR_encryption_phase2=$encryption_phase2"
-            echo "TF_VAR_integrity_phase1=$integrity_phase1"
-            echo "TF_VAR_dh_group_phase1=$dh_group_phase1"
-            echo "TF_VAR_lifetime_phase1=$lifetime_phase1"
-            echo "TF_VAR_ike_version_phase1=$ike_version_phase1"
-          } >> "$GITHUB_ENV"
-
-
-
-          #####echo command for terraform#####
-          echo "Terraform Variables Set:"
-          echo "TF_VAR_customer_name=$customer_name"
-          echo "TF_VAR_ipv4_cidr=$ipv4_cidr"
-          echo "TF_VAR_integrity_phase2=$integrity_phase2"
-          echo "TF_VAR_dh_group_phase2=$dh_group_phase2"
-          echo "TF_VAR_life_time_renegotiation=$life_time_renegotiation"
-          echo "TF_VAR_ike_version_phase2=$ike_version_phase2"
-          echo "TF_VAR_customer_gateway_ip=$customer_gateway_ip"
-          echo "TF_VAR_vpn_routing=$vpn_routing"
-          echo "TF_VAR_asn=$asn"
-          echo "TF_VAR_encryption_phase1=$encryption_phase1"
-          echo "TF_VAR_encryption_phase2=$encryption_phase2"
-          echo "TF_VAR_integrity_phase1=$integrity_phase1"
-          echo "TF_VAR_dh_group_phase1=$dh_group_phase1"
-          echo "TF_VAR_lifetime_phase1=$lifetime_phase1"
-          echo "TF_VAR_ike_version_phase1=$ike_version_phase1"
-
+  check_cidr:
+    runs-on: ubuntu-latest
+    needs: extract_data
+    steps:
       - name: Install Dependencies
         run: pip install boto3
 
@@ -150,20 +80,21 @@ jobs:
           AWS_REGION: "us-east-1"
           SNS_TOPIC_ARN: "arn:aws:sns:us-east-1:590184024707:tyfone-poc"
         run: |
-            output=$(python check_cidr.py)
-            echo "$output"
-            if echo "$output" | grep -q "overlap=false"; then
-              echo "overlap=false" >> "$GITHUB_ENV"
-              echo "::set-output name=overlap::false"
-            else
-              echo "overlap=true" >> "$GITHUB_ENV"
-              echo "::set-output name=overlap::true"
-            fi
+          output=$(python check_cidr.py)
+          echo "$output"
+          if echo "$output" | grep -q "overlap=false"; then
+            echo "overlap=false" >> "$GITHUB_ENV"
+          else
+            echo "overlap=true" >> "$GITHUB_ENV"
+          fi
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: check_cidr
+    if: env.overlap == 'false'
+    steps:
       - name: Trigger Terraform (if no overlap)
-        if: env.overlap == 'false'
-        #if: steps.cidr_check.outputs.overlap == 'false'
         run: |
-          env | grep TF_VAR_
           echo "No CIDR overlap detected. Proceeding with Terraform deployment..."
           terraform init -backend-config="key=${customer_name}.tfstate"
           terraform plan
@@ -172,6 +103,5 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: "us-east-1"
-          #TF_VAR_asn: ${{ secrets.TF_VAR_asn }}
           TF_VAR_transit_gateway_id: ${{ secrets.TF_VAR_transit_gateway_id }}
           TF_VAR_transit_gateway_route_table_id: ${{ secrets.TF_VAR_transit_gateway_route_table_id }}
