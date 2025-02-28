@@ -72,6 +72,9 @@ jobs:
       - name: Debug Check - List Files
         run: ls -la
 
+      - name: Ensure check_cidr.py is Executable
+        run: chmod +x ./check_cidr.py
+
       - name: Run CIDR Overlap Check
         id: check
         env:
@@ -84,7 +87,7 @@ jobs:
             echo "Error: check_cidr.py not found in $(pwd)!"
             exit 1
           fi
-          output=$(python check_cidr.py)
+          output=$(python3 ./check_cidr.py)
           echo "$output"
           if echo "$output" | grep -q "overlap=false"; then
             echo "overlap=false" >> "$GITHUB_ENV"
