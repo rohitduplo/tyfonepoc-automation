@@ -69,6 +69,9 @@ jobs:
       - name: Install Dependencies
         run: pip install boto3
 
+      - name: Debug Check - List Files
+        run: ls -la
+
       - name: Run CIDR Overlap Check
         id: check
         env:
@@ -77,8 +80,8 @@ jobs:
           AWS_REGION: "us-east-1"
           SNS_TOPIC_ARN: "arn:aws:sns:us-east-1:590184024707:tyfone-poc"
         run: |
-          if [ ! -f check_cidr.py ]; then
-            echo "Error: check_cidr.py not found!"
+          if [ ! -f ./check_cidr.py ]; then
+            echo "Error: check_cidr.py not found in $(pwd)!"
             exit 1
           fi
           output=$(python check_cidr.py)
